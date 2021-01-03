@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ibot-cm
+data:
+  ibot.mysql.url: "ibot-mysql-service" # 对应K8S集群外部MySQL服务Service
+  ibot.redis.url: "ibot-redis-service" # 对应K8S集群外部Redis服务Service
+  ibot.auth.url: "ibot-auth-service" # 对应K8S集群内部ibot-auth服务Service
+#  nacos.url: "nacos-service" # 对应K8S集群内部nacos服务Service
+#  ibot.monitor.admin.url: "ibot-monitor-admin-service" # 对应K8S集群内部ibot-monitor-admin服务Service
+  ibot.gateway.url: "ibot-gateway-service" # 对应K8S集群内部ibot-gateway服务Service
+  ibot.register.url: "ibot-register-service"
+  logstash.url: "logstash-service" # 对应K8S集群外部logstash服务Service
+  ibot.es.url: "ibot-es-service"
+  ibot.neo4j.url: "ibot-neo4j-service"

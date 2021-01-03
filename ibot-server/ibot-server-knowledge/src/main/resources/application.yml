@@ -1,0 +1,63 @@
+server:
+  port: 8202
+
+spring:
+  application:
+    name: ibot-knowledge-service
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+  datasource:
+    dynamic:
+      p6spy: true
+      hikari:
+        connection-timeout: 30000
+        max-lifetime: 1800000
+        max-pool-size: 15
+        min-idle: 5
+        connection-test-query: select 1
+        pool-name: IBotHikariCP
+      primary: base
+      datasource:
+        base:
+          username: ${mysql.user} #tplifebot
+          password: ${mysql.password} #Abcd@1234
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          url: jdbc:mysql://${mysql.url}/${mysql.db}?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2b8
+
+  data:
+    elasticsearch:
+      cluster-nodes: ${es.url}:9200
+
+    neo4j:
+      username: neo4j
+      password: 123456
+      #      uri: http://10.100.129.81:8474
+      uri: http://${neo4j.url}:8474
+elasticsearch:
+  index:
+    name: knowledge_test
+    type: question
+
+mybatis-plus:
+  type-aliases-package: com.taiping.ibot.server.knowledge.entity.*
+  mapper-locations: classpath:mapper/*/*.xml
+  configuration:
+    jdbc-type-for-null: null
+  global-config:
+    banner: false
+
+eureka:
+  instance:
+    lease-renewal-interval-in-seconds: 20
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    instance-info-replication-interval-seconds: 30
+    serviceUrl:
+      defaultZone: http://febs:123456@${ibot-register}:8001/register/eureka/
+
+security:
+  oauth2:
+    resource:
+      id: ${spring.application.name}
+      user-info-uri: http://${ibot-gateway}:8301/auth/user

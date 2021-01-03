@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.ibot.server.knowledge.mapper.StatisticMapper">
+    <resultMap id="recordMap" type="userRecord">
+        <result column="record_id" jdbcType="VARCHAR" property="recordId" />
+        <result column="sender_id" jdbcType="VARCHAR" property="senderId" />
+        <result column="user_question" jdbcType="VARCHAR" property="userQuestion" />
+        <result column="bot_answer" jdbcType="VARCHAR" property="botAnswer" />
+        <result column="bot_type" jdbcType="CHAR" property="botType" />
+        <result column="thumb_up" jdbcType="BIGINT" property="thumbUp"/>
+        <result column="thumb_down" jdbcType="BIGINT" property="thumbDown"/>
+        <result column="send_time" jdbcType="TIMESTAMP" property="sendTime"/>
+    </resultMap>
+
+    <resultMap id="thumbUpDownMap" type="thumbUpDownDto">
+        <result column="std_question_id" jdbcType="BIGINT" property="questionId" />
+        <result column="question" jdbcType="VARCHAR" property="question" />
+        <result column="answer" jdbcType="VARCHAR" property="answer" />
+        <result column="total" jdbcType="BIGINT" property="total" />
+        <result column="send_time" jdbcType="TIMESTAMP" property="sendTime"/>
+    </resultMap>
+
+    <select id="statisticThumbUp" resultMap="thumbUpDownMap">
+        SELECT ur.std_question_id, qa.question, qa.answer, sum(ur.thumb_up) total, ur.send_time
+        FROM user_record ur
+        JOIN qa  ON ur.std_question_id = qa.id
+        WHERE 1=1
+        <if test="botId != null">
+            AND ur.bot_id = #{botId}
+        </if>
+        group by ur.std_question_id
+        order by total desc
+        <!--LIMIT #{startFrom}, #{pageSize}-->
+    </select>
+
+    <select id="statisticThumbDown" resultMap="thumbUpDownMap">
+        SELECT ur.std_question_id, qa.question, qa.answer, sum(ur.thumb_down) total, ur.send_time
+        FROM user_record ur
+        JOIN qa  ON ur.std_question_id = qa.id
+        WHERE 1=1
+        <if test="botId != null">
+            AND ur.bot_id = #{botId}
+        </if>
+        group by ur.std_question_id
+        order by total desc
+        <!--LIMIT #{startFrom}, #{pageSize}-->
+    </select>
+
+
+    <select id="selectThumbCount" resultType="Long">
+        select count(distinct std_question_id) from user_record where std_question_id != -1
+    </select>
+
+    <select id="selectUserRecordCountByDay" resultType="map">
+        SELECT substring(send_time, 1, 10) as `date`, count(*) as `count`
+        FROM user_record
+        WHERE 1=1
+        <if test="botId != null">
+            AND user_record.bot_id = #{botId}
+        </if>
+        AND substring(send_time, 1, 10) IN
+        <foreach collection="dateList" item="date" index="index" open="(" close=")" separator=",">
+            #{date}
+        </foreach>
+        GROUP BY substring(send_time, 1, 10)
+    </select>
+
+    <select id="selectUserCountByDay" resultType="map">
+        SELECT substring(send_time, 1, 10) as `date`, count(distinct sender_id) as `count`
+        FROM user_record
+        WHERE 1=1
+        <if test="botId != null">
+            AND user_record.bot_id = #{botId}
+        </if>
+        AND substring(send_time, 1, 10) IN
+        <foreach collection="dateList" item="date" index="index" open="(" close=")" separator=",">
+            #{date}
+        </foreach>
+        GROUP BY substring(send_time, 1, 10)
+    </select>
+
+    <select id="selectRecallQuestionCountByDay" resultType="map">
+        SELECT substring(send_time, 1, 10) as `date`, count(*) as `count`
+        FROM user_record
+        WHERE 1=1
+        <if test="botId != null">
+            AND user_record.bot_id = #{botId}
+        </if>
+        AND bot_type != '3' AND substring(send_time, 1, 10) IN
+        <foreach collection="dateList" item="date" index="index" open="(" close=")" separator=",">
+            #{date}
+        </foreach>
+        GROUP BY substring(send_time, 1, 10)
+    </select>
+
+    <select id="selectUserRecordCountByMonth" resultType="map">
+        SELECT substring(send_time, 1, 7) as `date`, count(*) as `count`
+        FROM user_record
+        WHERE 1=1
+        <if test="botId != null">
+            AND user_record.bot_id = #{botId}
+        </if>
+        AND substring(send_time, 1, 7) IN
+        <foreach collection="dateList" item="date" index="index" open="(" close=")" separator=",">
+            #{date}
+        </foreach>
+        GROUP BY substring(send_time, 1, 7)
+    </select>
+
+    <select id="selectUserCountByMonth" resultType="map">
+        SELECT substring(send_time, 1, 7) as `date`, count(distinct sender_id) as `count`
+        FROM user_record
+        WHERE 1=1
+        <if test="botId != null">
+            AND user_record.bot_id = #{botId}
+        </if>
+        AND substring(send_time, 1, 7) IN
+        <foreach collection="dateList" item="date" index="index" open="(" close=")" separator=",">
+            #{date}
+        </foreach>
+        GROUP BY substring(send_time, 1, 7)
+    </select>
+
+    <select id="selectRecallQuestionCountByMonth" resultType="map">
+        SELECT substring(send_time, 1, 7) as `date`, count(*) as `count`
+        FROM user_record
+        WHERE 1=1
+        <if test="botId != null">
+            AND user_record.bot_id = #{botId}
+        </if>
+        AND bot_type != '3' AND substring(send_time, 1, 7) IN
+        <foreach collection="dateList" item="date" index="index" open="(" close=")" separator=",">
+            #{date}
+        </foreach>
+        GROUP BY substring(send_time, 1, 7)
+    </select>
+
+    <select id="selectUserRecordDetailPage" parameterType="userRecord" resultType="userRecord">
+        SELECT record_id, sender_id, user_question, bot_answer, bot_type, thumb_up, thumb_down, send_time, channel, std_question_id, kq.question std_question, ur.department
+        FROM user_record ur
+        LEFT JOIN knowledge_question kq ON std_question_id = kq.id
+        WHERE 1 = 1
+        <if test="record.botId != null">
+            AND bot_id = #{record.botId}
+        </if>
+        <if test="record.department != null and record.department != ''">
+            AND department = #{record.department}
+        </if>
+        <if test="record.stdQuestionId != null and record.stdQuestionId != ''">
+            AND std_question_id = #{record.stdQuestionId}
+        </if>
+        <if test="record.channel != null and record.channel != ''">
+            AND channel = #{record.channel}
+        </if>
+        <if test="record.thumbDown != null and record.thumbDown != ''">
+            AND thumb_down = #{record.thumbDown}
+        </if>
+        <if test="record.thumbUp != null and record.thumbUp != ''">
+            AND thumb_up = #{record.thumbUp}
+        </if>
+        <if test="record.botType != null and record.botType != ''">
+            AND bot_type = #{record.botType}
+        </if>
+        <if test="record.senderId != null and record.senderId != ''">
+            AND sender_id = #{record.senderId}
+        </if>
+        <if test="record.sendTimeFrom != null and record.sendTimeFrom != ''">
+            AND send_time &gt;= #{record.sendTimeFrom}
+        </if>
+        <if test="record.sendTimeTo != null and record.sendTimeTo != ''">
+            AND send_time &lt;= #{record.sendTimeTo}
+        </if>
+    </select>
+
+    <select id="selectHotUser" resultType="map">
+        SELECT sender_id as `user`, count(*) as `count`
+        FROM user_record
+        WHERE 1 = 1
+        <if test="botId != null">
+            AND user_record.bot_id = #{botId}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND send_time &gt;= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND send_time &lt;= #{endDate}
+        </if>
+        GROUP BY sender_id
+        ORDER BY `count` desc
+        LIMIT #{top}
+    </select>
+
+    <select id="selectBotHandleCount" resultType="map">
+        SELECT bot_type as `bot`, count(*) as `count`
+        FROM user_record
+        WHERE 1 = 1
+        <if test="botId != null">
+            AND user_record.bot_id = #{botId}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND send_time &gt;= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND send_time &lt;= #{endDate}
+        </if>
+        GROUP BY bot_type
+        ORDER BY `count` desc
+    </select>
+
+
+</mapper>

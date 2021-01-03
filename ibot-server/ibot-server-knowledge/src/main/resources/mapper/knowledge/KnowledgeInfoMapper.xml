@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.ibot.server.knowledge.mapper.KnowledgeInfoMapper">
+    <sql id="findKnowledgeInfoDetailPageSql">
+        SELECT
+        k.id id,
+        k.knowledge_name knowledgeName,
+        k.description description,
+        k.user_id userId,
+        k.dept_id deptId,
+        k.create_time createTime,
+        k.update_time updateTime,
+        u.username username,
+        d.dept_name deptName
+        FROM
+        knowledge_info k
+        LEFT JOIN t_user u ON (k.user_id = u.user_id)
+        LEFT JOIN t_dept d ON (k.dept_id = d.dept_id)
+        WHERE 1 = 1
+        <if test="knowledgeInfo.knowledgeName != null and knowledgeInfo.knowledgeName != ''">
+            AND k.knowledge_name = #{knowledgeInfo.knowledgeName}
+        </if>
+        <if test="knowledgeInfo.deptId != null and knowledgeInfo.deptId != ''">
+            AND k.dept_id = #{knowledgeInfo.deptId}
+        </if>
+        <if test="knowledgeInfo.userId != null and knowledgeInfo.userId != ''">
+            AND k.user_id = #{knowledgeInfo.userId}
+        </if>
+    </sql>
+
+    <select id="findKnowledgeInfoDetailPage" parameterType="knowledgeInfo" resultType="knowledgeInfo">
+        <include refid="findKnowledgeInfoDetailPageSql"/>
+    </select>
+
+</mapper>

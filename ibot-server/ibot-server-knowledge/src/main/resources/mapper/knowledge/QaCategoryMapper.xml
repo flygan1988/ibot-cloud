@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.ibot.server.knowledge.mapper.QaCategoryMapper">
+    <sql id="findQaCategorySql">
+        SELECT
+        q.id id,
+        q.name name,
+        q.pid pid,
+        q.k_id kid,
+        k.knowledge_name knowledgeName
+        FROM
+        qa_category q
+        LEFT JOIN knowledge_info k ON k.id = q.k_id
+        WHERE 1 = 1
+        <if test="category.name != null and category.name != ''">
+            AND q.name = #{category.name}
+        </if>
+        <if test="category.pid != null">
+            AND q.pid = #{category.pid}
+        </if>
+        <if test="category.kid != null">
+            AND k.id = #{category.kid}
+        </if>
+        <if test="category.id != null">
+            AND q.id = #{category.id}
+        </if>
+    </sql>
+    <select id="findCategoryList" parameterType="com.taiping.ibot.server.knowledge.entity.qa.QaCategory" resultType="qaCategory">
+        <include refid="findQaCategorySql"/>
+    </select>
+
+</mapper>

@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ibot-system-service
+spec:
+  ports:
+    - port: 8201
+      targetPort: 8201
+  selector:
+    name: ibot-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ibot-system-d
+spec:
+  selector:
+    matchLabels:
+      name: ibot-system
+  replicas: 2 # 2实例集群
+  template:
+    metadata:
+      labels:
+        name: ibot-system
+    spec:
+      containers:
+        - name: ibot-system
+          image: 10.29.158.34:80/ibot/ibot-server-system:v2.1
+          imagePullPolicy: Always
+          args:
+            - "--mysql.user=root"
+            - "--mysql.password=123456"
+            - "--mysql.db=insurance_qa"
+#            - "--ibot-register=10.101.13.30"
+#            - "--spring.profiles.active=prod"
+          env: # 从configmap加载配置到环境变量
+            - name: mysql.url
+              valueFrom:
+                configMapKeyRef:
+                  name: ibot-cm
+                  key: ibot.mysql.url
+            - name: redis.url
+              valueFrom:
+                configMapKeyRef:
+                  name: ibot-cm
+                  key: ibot.redis.url
+            - name: logstash.url
+              valueFrom:
+                configMapKeyRef:
+                  name: ibot-cm
+                  key: logstash.url
+            - name: ibot-gateway
+              valueFrom:
+                configMapKeyRef:
+                  name: ibot-cm
+                  key: ibot.gateway.url
+            - name: ibot-register
+              valueFrom:
+                configMapKeyRef:
+                  name: ibot-cm
+                  key: ibot.register.url
+            - name: TZ
+              value: "Asia/Shanghai"
+          volumeMounts:
+            - mountPath: /home/k8sops/ibot/log
+              name: ibot-system-data
+          # 虚拟机资源有限，对资源进行限制
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 300Mi
+            limits:
+              cpu: 1
+              memory: 500Mi
+      volumes: # 日志挂载到NFS服务器
+        - name: ibot-system-data
+          nfs:
+            path: /nfs/log
+            server: 10.29.158.34

@@ -1,0 +1,48 @@
+server:
+  port: 8301
+
+spring:
+  application:
+    name: ibot-gateway-service
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+
+eureka:
+  instance:
+    lease-renewal-interval-in-seconds: 20
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    instance-info-replication-interval-seconds: 30
+    registry-fetch-interval-seconds: 3
+    serviceUrl:
+      defaultZone: http://febs:123456@${ibot-register}:8001/register/eureka/
+
+zuul:
+  routes:
+    auth:
+      path: /auth/**
+      serviceId: ibot-auth-service
+      #url: http://ibot-auth-service:8101
+      sensitiveHeaders: "*"
+    system:
+      path: /system/**
+      serviceId: ibot-system-service
+      #url: http://ibot-system-service:8201
+      sensitiveHeaders: "*"
+    knowledge:
+      path: /knowledge/**
+      serviceId: ibot-knowledge-service
+      #url: http://ibot-knowledge-service:8202
+      sensitiveHeaders: "*"
+  retryable: true
+  ignored-services: "*"
+  ribbon:
+    eager-load:
+      enabled: true
+  SendErrorFilter:
+    error:
+      disable: true
+
+ribbon:
+  ReadTimeout: 3000

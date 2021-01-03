@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.ibot.server.knowledge.mapper.QaMapper">
+    <sql id="findQaDetailSql">
+        SELECT
+        qa.id id,
+        qa.pid pid,
+        qa.category_id categoryId,
+        c.name categoryName,
+        qa.k_id kid,
+        qa.user_id userId,
+        qa.question question,
+        qa.answer answer,
+        qa.status status,
+        qa.start_date startDate,
+        qa.end_date endDate,
+        qa.pic_url picUrl,
+        qa.video_url videoUrl,
+        qa.tag,
+        qa.create_time createTime,
+        qa.update_time updateTime,
+        u.username username,
+        k.knowledge_name knowledgeName,
+        GROUP_CONCAT(q.id ORDER BY q.id ASC SEPARATOR '||') similarQid,
+        GROUP_CONCAT(q.question ORDER BY q.id ASC SEPARATOR '||') similarQuestion
+        FROM
+        qa
+        LEFT JOIN t_user u ON (qa.user_id = u.user_id)
+        LEFT JOIN qa q ON (qa.id = q.pid)
+        LEFT JOIN qa_category c ON (qa.category_id = c.id)
+        LEFT JOIN knowledge_info k ON (qa.k_id = k.id)
+        WHERE 1 = 1
+        <if test="qa.id != null">
+            AND qa.id = #{qa.id}
+        </if>
+        <if test="qa.pid != null">
+            AND qa.pid = #{qa.pid}
+        </if>
+        <if test="qa.kid != null">
+            AND qa.k_id = #{qa.kid}
+        </if>
+        <if test="qa.categoryId != null">
+            AND qa.category_id  = #{qa.categoryId}
+        </if>
+        <if test="qa.userId != null">
+            AND u.user_id = #{qa.userId}
+        </if>
+        <if test="qa.status != null and qa.status != ''">
+            AND qa.status = #{qa.status}
+        </if>
+        <if test="qa.createTimeFrom != null and qa.createTimeFrom !=''">
+            And qa.create_time &gt; #{qa.createTimeFrom}
+        </if>
+        <if test="qa.createTimeTo!= null and qa.createTimeTo !=''">
+            And qa.create_time &lt; #{qa.createTimeTo}
+        </if>
+        GROUP BY
+        qa.id
+        <!--qa.pid,-->
+        <!--qa.category_id,-->
+        <!--qa.k_id,-->
+        <!--qa.user_id,-->
+        <!--qa.create_time,-->
+        <!--qa.update_time-->
+    </sql>
+    <select id="findQaDetailPage" parameterType="qa" resultType="qa">
+        <include refid="findQaDetailSql"/>
+    </select>
+
+    <select id="findQaDetailById" parameterType="Long" resultType="qa">
+        SELECT
+        qa.id id,
+        qa.pid pid,
+        qa.category_id categoryId,
+        c.name categoryName,
+        qa.k_id kid,
+        qa.user_id userId,
+        qa.question question,
+        qa.answer answer,
+        qa.status status,
+        qa.start_date startDate,
+        qa.end_date endDate,
+        qa.pic_url picUrl,
+        qa.video_url videoUrl,
+        qa.tag,
+        qa.create_time createTime,
+        qa.update_time updateTime,
+        u.username username,
+        k.knowledge_name knowledgeName,
+        GROUP_CONCAT(q.id ORDER BY q.id ASC SEPARATOR '||') similarQid,
+        GROUP_CONCAT(q.question ORDER BY q.id ASC SEPARATOR '||') similarQuestion
+        FROM
+        qa
+        LEFT JOIN t_user u ON (qa.user_id = u.user_id)
+        LEFT JOIN qa q ON (qa.id = q.pid)
+        LEFT JOIN qa_category c ON (qa.category_id = c.id)
+        LEFT JOIN knowledge_info k ON (qa.k_id = k.id)
+        WHERE qa.id = #{qid}
+        GROUP BY
+        qa.id
+        <!--qa.pid,-->
+        <!--qa.category_id,-->
+        <!--qa.k_id,-->
+        <!--qa.user_id,-->
+        <!--qa.create_time,-->
+        <!--qa.update_time-->
+    </select>
+
+</mapper>

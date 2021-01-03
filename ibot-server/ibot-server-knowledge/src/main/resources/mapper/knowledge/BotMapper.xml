@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.ibot.server.knowledge.mapper.BotMapper">
+    <sql id="findBotDetailSql">
+        SELECT
+        b.id id,
+        b.bot_name botName,
+        b.description description,
+        b.user_id userId,
+        b.dept_id deptId,
+        b.domain domain,
+        b.top_answer topAnswer,
+        b.create_time createTime,
+        b.update_time updateTime,
+        u.username username,
+        d.dept_name deptName,
+        GROUP_CONCAT(ki.id) knowledgeId,
+        GROUP_CONCAT(ki.knowledge_name) knowledgeName
+        FROM
+        bot b
+        LEFT JOIN t_user u ON (b.user_id = u.user_id)
+        LEFT JOIN t_dept d ON (b.dept_id = d.dept_id)
+        LEFT JOIN bot_knowledge bk ON (b.id = bk.bot_id)
+        LEFT JOIN knowledge_info ki ON ki.id = bk.k_id
+        WHERE 1 = 1
+        <if test="bot.botName != null and bot.botName != ''">
+            AND b.bot_name = #{bot.botName}
+        </if>
+        <if test="bot.deptId != null and bot.deptId != ''">
+            AND d.dept_id = #{bot.deptId}
+        </if>
+        <if test="bot.userId != null and bot.userId != ''">
+            AND u.user_id = #{bot.userId}
+        </if>
+        GROUP BY
+        b.bot_name,
+        b.id,
+        b.description,
+        b.user_id,
+        b.dept_id,
+        b.create_time,
+        b.update_time
+    </sql>
+    <select id="findBotDetailPage" parameterType="bot" resultType="bot">
+        <include refid="findBotDetailSql"/>
+    </select>
+
+</mapper>

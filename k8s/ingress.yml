@@ -1,0 +1,13 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ibot-ingress
+spec:
+  rules:
+    - host: ibot.tpl.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: ibot-gateway-service
+              servicePort: 8301

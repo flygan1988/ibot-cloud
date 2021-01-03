@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.ibot.server.knowledge.mapper.RuleMapper">
+    <sql id="findRuleDetailSql">
+        SELECT
+        r.id id,
+        r.rule_trigger ruleTrigger,
+        r.start_date startDate,
+        r.end_date endDate,
+        r.start_time startTime,
+        r.end_time endTime,
+        r.match_type matchType,
+        r.keywords keywords,
+        r.response response,
+        r.affect affect,
+        r.user_id userId,
+        r.dept_id deptId,
+        r.create_time createTime,
+        r.update_time updateTime,
+        u.username username,
+        d.dept_name deptName,
+        GROUP_CONCAT(b.id) botId,
+        GROUP_CONCAT(b.bot_name) botName
+        FROM
+        rule r
+        LEFT JOIN t_user u ON (r.user_id = u.user_id)
+        LEFT JOIN t_dept d ON (r.dept_id = d.dept_id)
+        LEFT JOIN bot_rule br ON (r.id = br.rule_id)
+        LEFT JOIN bot b ON b.id = br.bot_id
+        WHERE 1 = 1
+        <if test="rule.keywords != null and rule.keywords != ''">
+            AND r.keywords like #{rule.keywords}
+        </if>
+        <if test="rule.deptId != null and rule.deptId != ''">
+            AND d.dept_id = #{rule.deptId}
+        </if>
+        <if test="rule.userId != null and rule.userId != ''">
+            AND u.user_id = #{rule.userId}
+        </if>
+        GROUP BY
+        r.id,
+        r.user_id,
+        r.dept_id,
+        r.create_time,
+        r.update_time
+    </sql>
+    <select id="findRuleDetailPage" parameterType="rule" resultType="rule">
+        <include refid="findRuleDetailSql"/>
+    </select>
+
+</mapper>
