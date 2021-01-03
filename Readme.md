@@ -53,4 +53,5 @@ IBot Cloud是一款使用Spring Cloud Hoxton.RELEASE、Spring Cloud OAuth2 & Spr
 
 **联系人**
 
-甘飞  ganfei@tpl.cntaiping.com
+ganfeianqing@126.com
+
